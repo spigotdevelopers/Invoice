@@ -19,6 +19,9 @@ export default makeStyles((theme) => ({
       title: {
        float: 'left',
       },
+      titles: {
+        float: 'right',
+       },
       details: {
         marginTop: '4vh',
       },

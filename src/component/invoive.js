@@ -99,17 +99,23 @@ export default function invoive() {
         <Card className={classes.root}>
           <CardContent>
             <Typography color="primary" variant="h3" className={classes.title}>
-              Grow Up
+              Grow Up Consultancy
+            </Typography>
+            <Typography variant="h5" color="primary" className={classes.titles}>
+              Mobile No : 9081733862
             </Typography>
           </CardContent>
           <CardContent className={classes.details}>
             <Grid container spacing={2}>
-              <Grid item md={3} xs={12}>
-                <Typography style={{ float: "left" }} variant="body1">
-                  Address : Mini Bajar, Surat - 395006
+              <Grid item md={4} xs={12}>
+                <Typography style={{ float: "left" }} color='primary'  variant="body1">
+                  Address :
+                </Typography>
+                <Typography  variant="body1">
+                  201, Ambica Pinacle, Lajamani Chowk, Mota Varachha, Surat - 39410
                 </Typography>
               </Grid>
-              <Grid item md={6} xs={12} />
+              <Grid item md={5} xs={12} />
               <Grid item md={3} xs={12}>
                 <TextField
                   fullWidth
@@ -119,7 +125,7 @@ export default function invoive() {
                   variant="outlined"
                   type="text"
                   disabled
-                  label="#Invoice"
+                  label="Bill no :"
                 />
               </Grid>
               <Grid item md={5} xs={12}>
@@ -269,6 +275,21 @@ export default function invoive() {
             >
               Submit
             </Button> */}
+          </CardContent>
+          <CardContent>
+            <Grid container spacing={1}>
+              <Grid item xs={12} md={6}>
+                <Typography style={{ float: "left" }} color='primary'  variant="body1">
+                  Customer Signature :
+                </Typography>
+               
+                </Grid>
+                <Grid item xs={12} md={6}>
+                <Typography style={{  float: "center" }} color='primary'  variant="body1">
+                 Recived by :
+                </Typography>
+                </Grid>
+                </Grid>
           </CardContent>
         </Card>
       </div>
