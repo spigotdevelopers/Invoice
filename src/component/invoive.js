@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -18,75 +18,103 @@ import {
   Button,
 } from "@material-ui/core";
 import AddCircleIcon from "@material-ui/icons/AddCircle";
+import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 import RemoveCircleOutlineIcon from "@material-ui/icons/RemoveCircleOutline";
+import { showNotification } from "./notification";
 import moment from "moment";
-import { v4 as uuid } from "uuid";
+import { v4 as uuidv4 } from "uuid";
+import { useNavigate } from "react-router-dom";
 import useStyles from "./style";
 
 export default function invoive() {
   const classes = useStyles();
-  const [invoiceNumber, setInvoiceNumber] = useState(uuid().slice(0, 1));
+  const [invoiceList, setInvoiceList] = useState([]);
+  const [invoiceNumber, setInvoiceNumber] = useState();
+  console.log(invoiceList.length, invoiceNumber);
   const [customerName, setCustomerName] = useState();
+  const [address, setAddress] = useState();
+  const navigate = useNavigate();
+
   const [invoiceDate, setInvoiceDate] = useState(
     moment(new Date()).format("YYYY-MM-DD")
   );
   const [inputList, setInputList] = useState([
     {
-      name: "",
-      price: 650,
+      itemName: "",
+      itemPrice: 650,
     },
   ]);
 
   function subtotal(items) {
-    return items.map(({ price }) => price).reduce((sum, i) => sum + i, 0);
+    return items
+      .map(({ itemPrice }) => itemPrice)
+      .reduce((sum, i) => sum + i, 0);
   }
   const invoiceSubtotal = subtotal(inputList);
 
-  // eslint-disable-next-line no-unused-vars
-  const onSubmit = () => {
-    localStorage.setItem("Invoice", JSON.stringify(inputList));
-    localStorage.setItem("Invoice Id", invoiceNumber);
-    localStorage.setItem("Customer Name", customerName);
-    localStorage.setItem("Invoice Date", invoiceDate);
-    localStorage.setItem("Total Amount of Invoive", invoiceSubtotal);
-  };
   const handleChangeRowData = (e, index) => {
     const newState = [...inputList];
-    newState[index].name = e.target.value;
+    newState[index].itemName = e.target.value;
     setInputList(newState);
   };
+
+  const fetchData = () => {
+    fetch("https://nodemongodbdemo.herokuapp.com/")
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        if (data.message) {
+          setInvoiceList(data.message);
+          setInvoiceNumber(data.message.length + 1);
+        }
+      });
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const ref = React.createRef();
 
   const windowPrint = () => {
-    if(!customerName){
-      alert('Customer Name is requird')
+    if (!customerName) {
+      alert("Customer Name is requird");
     } else {
-    document.body.style.visibility = "hidden";
-    document.body.style.visibility = "hidden";
-    ref.current.style.visibility = " visible";
-    ref.current.style.position = "fixed";
-    ref.current.style.top = "50%";
-    ref.current.style.left = "50%";
-    ref.current.style.width = "100%";
-    ref.current.style.visibility = " visible";
-    ref.current.style.transform = "translate(-50%, -50%)";
-    window.print();
-    document.body.style.visibility = "visible";
-    ref.current.style.position = "unset";
-    ref.current.style.width = "unset";
-    ref.current.style.top = "unset";
-    ref.current.style.left = "unset";
-    ref.current.style.transform = "none";
+      window.print();
     }
+  };
+
+  const createInvoice = () => {
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        _id: uuidv4(),
+        invoiceNo: JSON.stringify(invoiceNumber),
+        customerName: customerName,
+        customerAddress: address,
+        items: inputList,
+        total: invoiceSubtotal,
+        invoiceDate: invoiceDate,
+      }),
+    };
+    fetch("https://nodemongodbdemo.herokuapp.com/", requestOptions)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data) {
+          showNotification(data.status, "success");
+          alert(data.status, "success");
+        }
+      });
   };
 
   const handleAddRows = () => {
     setInputList([
       ...inputList,
       {
-        name: "",
-        price: 650,
+        itemName: "",
+        itemPrice: 650,
       },
     ]);
   };
@@ -95,10 +123,15 @@ export default function invoive() {
   };
   return (
     <>
+      <br />
       <div ref={ref} className={classes.invoive}>
         <Card className={classes.root}>
           <CardContent>
-            <Typography color="primary" variant="h3" className={classes.title}>
+            <Typography color="primary" variant="h4" className={classes.title}>
+              <ArrowBackIosIcon
+                onClick={() => navigate("/")}
+                style={{ fontSize: 25 }}
+              />
               Grow Up Consultancy
             </Typography>
             <Typography variant="h5" color="primary" className={classes.titles}>
@@ -108,11 +141,16 @@ export default function invoive() {
           <CardContent className={classes.details}>
             <Grid container spacing={2}>
               <Grid item md={4} xs={12}>
-                <Typography style={{ float: "left" }} color='primary'  variant="body1">
+                <Typography
+                  style={{ float: "left" }}
+                  color="primary"
+                  variant="body1"
+                >
                   Address :
                 </Typography>
-                <Typography  variant="body1">
-                  201, Ambica Pinacle, Lajamani Chowk, Mota Varachha, Surat - 39410
+                <Typography variant="body1">
+                  201, Ambica Pinacle, Lajamani Chowk, Mota Varachha, Surat -
+                  39410
                 </Typography>
               </Grid>
               <Grid item md={5} xs={12} />
@@ -121,10 +159,11 @@ export default function invoive() {
                   fullWidth
                   size="small"
                   value={invoiceNumber}
+                  disabled
+                  InputLabelProps={{ shrink: invoiceNumber }}
                   onChange={(e) => setInvoiceNumber(e.target.value)}
                   variant="outlined"
                   type="text"
-                  disabled
                   label="Bill no :"
                 />
               </Grid>
@@ -161,6 +200,8 @@ export default function invoive() {
                 <TextField
                   id="date"
                   label="Address"
+                  onChange={(e) => setAddress(e.target.value)}
+                  value={address}
                   type="text"
                   fullWidth
                   size="small"
@@ -204,7 +245,7 @@ export default function invoive() {
                             onChange={(e) => {
                               handleChangeRowData(e, index);
                             }}
-                            value={item.name}
+                            value={item.itemName}
                             InputLabelProps={{
                               shrink: true,
                             }}
@@ -213,7 +254,7 @@ export default function invoive() {
                         <TableCell align="right"></TableCell>
                         <TableCell align="right"></TableCell>
                         <TableCell align="right"></TableCell>
-                        <TableCell align="center">{item.price}</TableCell>
+                        <TableCell align="center">{item.itemPrice}</TableCell>
                       </TableRow>
                     ))}
                     <TableRow>
@@ -266,42 +307,50 @@ export default function invoive() {
                 </Table>
               </TableContainer>
             </Grid>
-            {/* <Button
-              className={classes.Button}
-              variant="contained"
-              color="primary"
-              size="small"
-              onClick={() => onSubmit()}
-            >
-              Submit
-            </Button> */}
           </CardContent>
           <CardContent>
             <Grid container spacing={1}>
               <Grid item xs={12} md={6}>
-                <Typography style={{ float: "left" }} color='primary'  variant="body1">
+                <Typography
+                  style={{ float: "left" }}
+                  color="primary"
+                  variant="body1"
+                >
                   Customer Signature :
                 </Typography>
-               
-                </Grid>
-                <Grid item xs={12} md={6}>
-                <Typography style={{  float: "center" }} color='primary'  variant="body1">
-                 Recived by :
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography
+                  style={{ float: "center" }}
+                  color="primary"
+                  variant="body1"
+                >
+                  Recived by :
                 </Typography>
-                </Grid>
-                </Grid>
+              </Grid>
+            </Grid>
           </CardContent>
         </Card>
       </div>
       <Button
-              className={classes.Button}
-              variant="contained"
-              color="primary"
-              size="small"
-              onClick={windowPrint}
-            >
-              Print
-            </Button>
+        className={classes.Button}
+        variant="contained"
+        color="primary"
+        size="small"
+        onClick={() => createInvoice()}
+      >
+        Save
+      </Button>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <Button
+        className={classes.Button}
+        variant="contained"
+        color="primary"
+        size="small"
+        onClick={windowPrint}
+      >
+        Print
+      </Button>
     </>
   );
 }
