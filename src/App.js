@@ -10,6 +10,8 @@ function App() {
       <Routes>
         <Route exact path="/" element={<InvoiceTablel />}>
         </Route>
+        <Route path="/createinvoice/:id" element={<Invoive />}>
+        </Route>
         <Route path="/createinvoice" element={<Invoive />}>
         </Route>
       </Routes>

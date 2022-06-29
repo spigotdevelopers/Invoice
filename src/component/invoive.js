@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-hooks/rules-of-hooks */
 import React, { useState, useEffect } from "react";
 import {
@@ -23,14 +24,14 @@ import RemoveCircleOutlineIcon from "@material-ui/icons/RemoveCircleOutline";
 import { showNotification } from "./notification";
 import moment from "moment";
 import { v4 as uuidv4 } from "uuid";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import useStyles from "./style";
 
 export default function invoive() {
   const classes = useStyles();
-  const [invoiceList, setInvoiceList] = useState([]);
+  const params = useParams();
   const [invoiceNumber, setInvoiceNumber] = useState();
-  console.log(invoiceList.length, invoiceNumber);
+  console.log("id", params);
   const [customerName, setCustomerName] = useState();
   const [address, setAddress] = useState();
   const navigate = useNavigate();
@@ -59,20 +60,43 @@ export default function invoive() {
   };
 
   const fetchData = () => {
+    if(!params.id){
     fetch("https://nodemongodbdemo.herokuapp.com/")
       .then((response) => {
         return response.json();
       })
       .then((data) => {
         if (data.message) {
-          setInvoiceList(data.message);
           setInvoiceNumber(data.message.length + 1);
         }
       });
+    }
+  };
+
+  const invoiceById = () => {
+    if (params.id) {
+      fetch(`https://nodemongodbdemo.herokuapp.com/${params.id}`)
+        .then((response) => {
+          return response.json();
+        })
+        .then((data) => {
+          if (data.message) {
+            console.log("Edit", data.message);
+            setInvoiceNumber(data.message.invoiceNo);
+            setCustomerName(data.message.customerName);
+            setAddress(data.message.customerAddress);
+            setInvoiceDate(
+              moment(data.message.invoiceDate).format("YYYY-MM-DD")
+            );
+            setInputList(data.message.items);
+          }
+        });
+    }
   };
 
   useEffect(() => {
     fetchData();
+    invoiceById();
   }, []);
 
   const ref = React.createRef();
@@ -83,6 +107,30 @@ export default function invoive() {
     } else {
       window.print();
     }
+  };
+
+  const editInvoice = () => {
+    const requestOptions = {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        _id: params.id,
+        invoiceNo: JSON.stringify(invoiceNumber),
+        customerName: customerName,
+        customerAddress: address,
+        items: inputList,
+        total: invoiceSubtotal,
+        invoiceDate: invoiceDate,
+      }),
+    };
+    fetch(`https://nodemongodbdemo.herokuapp.com/${params.id}`, requestOptions)
+      .then((response) => response.json())
+      .then(() => {
+          alert("Success", "success");
+          navigate("/");
+      });
+      alert("Success", "success");
+      navigate("/");
   };
 
   const createInvoice = () => {
@@ -105,6 +153,7 @@ export default function invoive() {
         if (data) {
           showNotification(data.status, "success");
           alert(data.status, "success");
+          navigate("/");
         }
       });
   };
@@ -173,6 +222,7 @@ export default function invoive() {
                   label="Customer Name"
                   type="text"
                   fullWidth
+                  InputLabelProps={{ shrink: customerName }}
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   size="small"
@@ -202,6 +252,7 @@ export default function invoive() {
                   label="Address"
                   onChange={(e) => setAddress(e.target.value)}
                   value={address}
+                  InputLabelProps={{ shrink: address }}
                   type="text"
                   fullWidth
                   size="small"
@@ -337,7 +388,13 @@ export default function invoive() {
         variant="contained"
         color="primary"
         size="small"
-        onClick={() => createInvoice()}
+        onClick={() => {
+          if (params.id) {
+            editInvoice();
+          } else {
+            createInvoice();
+          }
+        }}
       >
         Save
       </Button>
