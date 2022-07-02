@@ -10,11 +10,12 @@ export default makeStyles((theme) => ({
       invoive: {
         paddingTop: '1vh',
         paddingBottom: '1vh',
-        marginLeft: '2%',
+        marginLeft: '1%',
         justifyContent: 'center',
       },
       Button: {
-        marginTop: '1vh',
+        marginTop: '2vh',
+        marginLeft: 20,
       },
       title: {
        float: 'left',

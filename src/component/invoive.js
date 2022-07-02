@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -18,20 +18,23 @@ import {
   Tooltip,
   Button,
 } from "@material-ui/core";
+import SaveIcon from '@material-ui/icons/Save';
+import PrintIcon from '@material-ui/icons/Print';
 import AddCircleIcon from "@material-ui/icons/AddCircle";
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 import RemoveCircleOutlineIcon from "@material-ui/icons/RemoveCircleOutline";
 import { showNotification } from "./notification";
 import moment from "moment";
 import { v4 as uuidv4 } from "uuid";
+import ReactToPrint from "react-to-print";
 import { useNavigate, useParams } from "react-router-dom";
 import useStyles from "./style";
 
 export default function invoive() {
   const classes = useStyles();
+  let componentRef = useRef();
   const params = useParams();
   const [invoiceNumber, setInvoiceNumber] = useState();
-  console.log("id", params);
   const [customerName, setCustomerName] = useState();
   const [address, setAddress] = useState();
   const navigate = useNavigate();
@@ -60,16 +63,16 @@ export default function invoive() {
   };
 
   const fetchData = () => {
-    if(!params.id){
-    fetch("https://nodemongodbdemo.herokuapp.com/")
-      .then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        if (data.message) {
-          setInvoiceNumber(data.message.length + 1);
-        }
-      });
+    if (!params.id) {
+      fetch("https://nodemongodbdemo.herokuapp.com/")
+        .then((response) => {
+          return response.json();
+        })
+        .then((data) => {
+          if (data.message) {
+            setInvoiceNumber(data.message.length + 1);
+          }
+        });
     }
   };
 
@@ -99,63 +102,64 @@ export default function invoive() {
     invoiceById();
   }, []);
 
-  const ref = React.createRef();
-
-  const windowPrint = () => {
+  const editInvoice = () => {
     if (!customerName) {
       alert("Customer Name is requird");
     } else {
-      window.print();
+      const requestOptions = {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          _id: params.id,
+          invoiceNo: JSON.stringify(invoiceNumber),
+          customerName: customerName,
+          customerAddress: address,
+          items: inputList,
+          total: invoiceSubtotal,
+          invoiceDate: invoiceDate,
+        }),
+      };
+      fetch(
+        `https://nodemongodbdemo.herokuapp.com/${params.id}`,
+        requestOptions
+      )
+        .then((response) => response.json())
+        .then(() => {
+          alert("Success", "success");
+          navigate("/");
+        });
+      alert("Success", "success");
+      navigate("/");
     }
   };
 
-  const editInvoice = () => {
-    const requestOptions = {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        _id: params.id,
-        invoiceNo: JSON.stringify(invoiceNumber),
-        customerName: customerName,
-        customerAddress: address,
-        items: inputList,
-        total: invoiceSubtotal,
-        invoiceDate: invoiceDate,
-      }),
-    };
-    fetch(`https://nodemongodbdemo.herokuapp.com/${params.id}`, requestOptions)
-      .then((response) => response.json())
-      .then(() => {
-          alert("Success", "success");
-          navigate("/");
-      });
-      alert("Success", "success");
-      navigate("/");
-  };
-
   const createInvoice = () => {
-    const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        _id: uuidv4(),
-        invoiceNo: JSON.stringify(invoiceNumber),
-        customerName: customerName,
-        customerAddress: address,
-        items: inputList,
-        total: invoiceSubtotal,
-        invoiceDate: invoiceDate,
-      }),
-    };
-    fetch("https://nodemongodbdemo.herokuapp.com/", requestOptions)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data) {
-          showNotification(data.status, "success");
-          alert(data.status, "success");
-          navigate("/");
-        }
-      });
+    if (!customerName) {
+      alert("Customer Name is requird");
+    } else {
+      const requestOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          _id: uuidv4(),
+          invoiceNo: JSON.stringify(invoiceNumber),
+          customerName: customerName,
+          customerAddress: address,
+          items: inputList,
+          total: invoiceSubtotal,
+          invoiceDate: invoiceDate,
+        }),
+      };
+      fetch("https://nodemongodbdemo.herokuapp.com/", requestOptions)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data) {
+            showNotification(data.status, "success");
+            alert(data.status, "success");
+            navigate("/");
+          }
+        });
+    }
   };
 
   const handleAddRows = () => {
@@ -172,8 +176,32 @@ export default function invoive() {
   };
   return (
     <>
+       <Button
+        className={classes.Button}
+        variant="contained"
+        color="primary"
+        size="small"
+        startIcon={<SaveIcon />}
+        onClick={() => {
+          if (params.id) {
+            editInvoice();
+          } else {
+            createInvoice();
+          }
+        }}
+      >
+        Save
+      </Button>
+      <ReactToPrint
+        trigger={() => (
+          <Button startIcon={<PrintIcon />}  className={classes.Button} variant="contained" color="primary" size="small">
+            Print
+          </Button>
+        )}
+        content={() => componentRef}
+      />
       <br />
-      <div ref={ref} className={classes.invoive}>
+      <div ref={(el) => (componentRef = el)} className={classes.invoive}>
         <Card className={classes.root}>
           <CardContent>
             <Typography color="primary" variant="h4" className={classes.title}>
@@ -383,31 +411,6 @@ export default function invoive() {
           </CardContent>
         </Card>
       </div>
-      <Button
-        className={classes.Button}
-        variant="contained"
-        color="primary"
-        size="small"
-        onClick={() => {
-          if (params.id) {
-            editInvoice();
-          } else {
-            createInvoice();
-          }
-        }}
-      >
-        Save
-      </Button>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      <Button
-        className={classes.Button}
-        variant="contained"
-        color="primary"
-        size="small"
-        onClick={windowPrint}
-      >
-        Print
-      </Button>
     </>
   );
 }
