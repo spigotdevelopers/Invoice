@@ -23,7 +23,6 @@ import PrintIcon from '@material-ui/icons/Print';
 import AddCircleIcon from "@material-ui/icons/AddCircle";
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 import RemoveCircleOutlineIcon from "@material-ui/icons/RemoveCircleOutline";
-import { showNotification } from "./notification";
 import moment from "moment";
 import { v4 as uuidv4 } from "uuid";
 import ReactToPrint from "react-to-print";
@@ -154,7 +153,6 @@ export default function invoive() {
         .then((response) => response.json())
         .then((data) => {
           if (data) {
-            showNotification(data.status, "success");
             alert(data.status, "success");
             navigate("/");
           }
