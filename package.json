@@ -2,9 +2,10 @@
   "name": "invoice",
   "version": "0.1.0",
   "private": true,
-  "engines" : { 
-    "npm" : ">=7.0.0",
-    "node" : ">=16.0.0"
+  "engines": {
+    "node": "13.1.0",
+    "npm": "6.12.1",
+    "yarn": "1.19.1"
   },
   "dependencies": {
     "@date-io/date-fns": "^2.13.1",
