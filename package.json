@@ -2,6 +2,11 @@
   "name": "invoice",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "14.15.4",
+    "npm": "6.12.1",
+    "yarn": "1.19.1"
+  },
   "dependencies": {
     "@date-io/date-fns": "^2.13.1",
     "@emotion/react": "^11.8.2",
