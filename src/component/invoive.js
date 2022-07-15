@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -19,19 +19,19 @@ import {
   Button,
 } from "@material-ui/core";
 import SaveIcon from '@material-ui/icons/Save';
-// import PrintIcon from '@material-ui/icons/Print';
+import PrintIcon from '@material-ui/icons/Print';
 import AddCircleIcon from "@material-ui/icons/AddCircle";
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 import RemoveCircleOutlineIcon from "@material-ui/icons/RemoveCircleOutline";
 import moment from "moment";
 import { v4 as uuidv4 } from "uuid";
-// import ReactToPrint from "react-to-print";
+import ReactToPrint from "react-to-print";
 import { useNavigate, useParams } from "react-router-dom";
 import useStyles from "./style";
 
 export default function invoive() {
   const classes = useStyles();
-  // let componentRef = useRef();
+  let componentRef = useRef();
   const params = useParams();
   const [invoiceNumber, setInvoiceNumber] = useState();
   const [customerName, setCustomerName] = useState();
@@ -190,16 +190,16 @@ export default function invoive() {
       >
         Save
       </Button>
-      {/* <ReactToPrint
+      <ReactToPrint
         trigger={() => (
           <Button startIcon={<PrintIcon />}  className={classes.Button} variant="contained" color="primary" size="small">
             Print
           </Button>
         )}
         content={() => componentRef}
-      /> */}
+      />
       <br />
-      <div className={classes.invoive}>
+      <div ref={el => (componentRef = el)} className={classes.invoive}>
         <Card className={classes.root}>
           <CardContent>
             <Typography color="primary" variant="h4" className={classes.title}>
@@ -234,7 +234,6 @@ export default function invoive() {
                   fullWidth
                   size="small"
                   value={invoiceNumber}
-                  disabled
                   InputLabelProps={{ shrink: invoiceNumber }}
                   onChange={(e) => setInvoiceNumber(e.target.value)}
                   variant="outlined"
