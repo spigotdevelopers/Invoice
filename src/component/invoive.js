@@ -69,7 +69,7 @@ export default function invoive() {
         })
         .then((data) => {
           if (data.message) {
-            setInvoiceNumber(data.message.length + 1);
+            setInvoiceNumber(4096 + data.message.length + 1);
           }
         });
     }
@@ -83,7 +83,6 @@ export default function invoive() {
         })
         .then((data) => {
           if (data.message) {
-            console.log("Edit", data.message);
             setInvoiceNumber(data.message.invoiceNo);
             setCustomerName(data.message.customerName);
             setAddress(data.message.customerAddress);
@@ -234,6 +233,7 @@ export default function invoive() {
                   fullWidth
                   size="small"
                   value={invoiceNumber}
+                  disabled
                   InputLabelProps={{ shrink: invoiceNumber }}
                   onChange={(e) => setInvoiceNumber(e.target.value)}
                   variant="outlined"
